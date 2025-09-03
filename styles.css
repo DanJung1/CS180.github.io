@@ -127,7 +127,27 @@ body {
     font-size: 0.9rem;
 }
 
-/* Responsive Design */
+/* Section Explanations */
+.section-explanation {
+    margin-top: 3rem;
+    text-align: center;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.section-explanation p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #4b5563;
+    background: #f8fafc;
+    padding: 2rem;
+    border-radius: 12px;
+    border-left: 4px solid #3b82f6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
     .header h1 {
         font-size: 2rem;
@@ -144,6 +164,12 @@ body {
     
     .container {
         padding: 0 15px;
+    }
+
+    .section-explanation p {
+        font-size: 1rem;
+        padding: 1.5rem;
+        margin: 2rem 1rem 0 1rem;
     }
 }
 
