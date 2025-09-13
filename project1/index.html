@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS 180 Project 1 - Prokudin-Gorskii Colorization</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #fafafa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px 0 30px 0;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            color: #2c3e50;
+            margin: 0 0 15px 0;
+            font-weight: 300;
+            letter-spacing: -0.5px;
+            text-align: center;
+            display: block;
+            width: 100%;
+        }
+        
+        .subtitle {
+            font-size: 1.3rem;
+            color: #7f8c8d;
+            font-weight: 300;
+            margin: 0;
+            letter-spacing: 0.5px;
+            text-align: center;
+            display: block;
+            width: 100%;
+        }
+        
+        section {
+            margin-bottom: 50px;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            font-weight: 400;
+            border-left: 4px solid #3498db;
+            padding-left: 15px;
+        }
+        
+        h3 {
+            color: #34495e;
+            margin: 30px 0 15px 0;
+            font-size: 1.3rem;
+            font-weight: 500;
+        }
+        
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .image-item {
+            text-align: center;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        
+        .image-item img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+        }
+        
+        .image-caption {
+            font-weight: 500;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .offset-info {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            font-family: 'Courier New', monospace;
+            background: #ecf0f1;
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .code-block {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 15px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .problem-solution {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 4px solid #28a745;
+        }
+        
+        .problem-solution h4 {
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        
+        ul {
+            margin: 15px 0;
+            padding-left: 25px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 60px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div style="margin-bottom: 20px;">
+                <a href="../" style="color: #7f8c8d; text-decoration: none; font-size: 0.9rem; font-weight: 500;">← Back to All Projects</a>
+            </div>
+            <h1>Prokudin-Gorskii Glass Plate Colorization</h1>
+            <p class="subtitle">CS 180 Project 1 - Submission by Daniel Jung</p>
+        </header>
+
+        <section>
+            <h2>Project Overview</h2>
+            <p>This project implements an automatic colorization algorithm for digitized Prokudin-Gorskii glass plate images. The goal is to take a three-channel glass plate image (BGR order) and produce a single, properly aligned color image by automatically aligning the green and red channels to the blue reference channel.</p>
+            
+            <p>The algorithm uses a combination of exhaustive search and pyramid-based alignment to handle both small and large images efficiently. Key features include edge detection for better alignment, adaptive cropping to remove artifacts, and multiple similarity metrics for robust channel matching.</p>
+        </section>
+
+        <section>
+            <h2>Technical Approach</h2>
+            
+            <h3>Core Algorithm</h3>
+            <p>The implementation follows a multi-stage approach:</p>
+            <ul>
+                <li><strong>Channel Extraction:</strong> Split the input image into three equal parts (B, G, R channels)</li>
+                <li><strong>Border Cropping:</strong> Remove artifacts from image borders (8-12% depending on image size)</li>
+                <li><strong>Feature Extraction:</strong> Use Sobel edge detection for more robust alignment</li>
+                <li><strong>Alignment Search:</strong> Exhaustive search with pyramid acceleration for large images</li>
+                <li><strong>Similarity Metrics:</strong> L2 norm and normalized L2 norm for scoring alignments</li>
+            </ul>
+
+            <h3>Alignment Strategy</h3>
+            <p>For small images (&lt; 1500px), the algorithm uses pyramid alignment with moderate search ranges. 
+                For large images, it employs a more sophisticated pyramid approach with adaptive search ranges and refinement steps.</p>
+
+            <h3>Problems Encountered & Solutions</h3>
+            
+            <div class="problem-solution">
+                <h4>Problem 1: Poor Alignment Quality</h4>
+                <p><strong>Issue:</strong> Initial naive implementation resulted in large alignment errors despite using standard metrics.</p>
+                <p><strong>Solution:</strong> Implemented more aggressive border cropping (8-12% depending on image size) to remove artifacts that were interfering with alignment. This significantly improved alignment accuracy.</p>
+            </div>
+
+            <div class="problem-solution">
+                <h4>Problem 2: Slow Processing for Large Images</h4>
+                <p><strong>Issue:</strong> Exhaustive search became prohibitively slow for high-resolution .tif images.</p>
+                <p><strong>Solution:</strong> Implemented pyramid alignment with recursive downsampling and adaptive search ranges. Also optimized search step sizes and used edge features for faster, more accurate alignment.</p>
+            </div>
+
+            <div class="problem-solution">
+                <h4>Problem 3: Pyramid Implementation Complexity</h4>
+                <p><strong>Issue:</strong> The pyramid implementation was the most challenging part, requiring careful handling of scale factors and shift propagation.</p>
+                <p><strong>Solution:</strong> Used recursive calls with proper scale factor handling and refinement steps at each pyramid level to ensure accuracy while maintaining speed.</p>
+            </div>
+        </section>
+
+        <section>
+            <h2>Results on Example Images</h2>
+            <p>Below are the results of the colorization algorithm on all provided example images, showing the calculated offset vectors for green and red channel alignment.</p>
+            
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="output_cathedral.jpg" alt="Cathedral">
+                    <div class="image-caption">Cathedral</div>
+                    <div class="offset-info">G: (6, 2) | R: (13, 3) | 0.63s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="output_church.jpg" alt="Church">
+                    <div class="image-caption">Church</div>
+                    <div class="offset-info">G: (26, 4) | R: (59, -4) | 43.46s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="output_emir.jpg" alt="Emir">
+                    <div class="image-caption">Emir of Bukhara</div>
+                    <div class="offset-info">G: (49, 24) | R: (107, 40) | 43.31s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="output_harvesters.jpg" alt="Harvesters">
+                    <div class="image-caption">Harvesters</div>
+                    <div class="offset-info">G: (61, 17) | R: (126, 14) | 53.38s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="output_icon.jpg" alt="Icon">
+                    <div class="image-caption">Icon</div>
+                    <div class="offset-info">G: (42, 17) | R: (90, 23) | 50.65s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="output_italil.jpg" alt="Italil">
+                    <div class="image-caption">Italil</div>
+                    <div class="offset-info">G: (38, 22) | R: (77, 36) | 41.47s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="output_melons.jpg" alt="Melons">
+                    <div class="image-caption">Melons</div>
+                    <div class="offset-info">G: (81, 10) | R: (178, 13) | 43.32s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="output_monastery.jpg" alt="Monastery">
+                    <div class="image-caption">Monastery</div>
+                    <div class="offset-info">G: (-2, 2) | R: (4, 2) | 0.46s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="output_self_portrait.jpg" alt="Self Portrait">
+                    <div class="image-caption">Self Portrait</div>
+                    <div class="offset-info">G: (79, 29) | R: (177, 37) | 38.68s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="output_siren.jpg" alt="Siren">
+                    <div class="image-caption">Siren</div>
+                    <div class="offset-info">G: (50, -6) | R: (98, -24) | 41.42s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="output_three_generations.jpg" alt="Three Generations">
+                    <div class="image-caption">Three Generations</div>
+                    <div class="offset-info">G: (54, 12) | R: (113, 9) | 45.25s</div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="output_tobolsk.jpg" alt="Tobolsk">
+                    <div class="image-caption">Tobolsk</div>
+                    <div class="offset-info">G: (4, 3) | R: (7, 3) | 0.65s</div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Additional Examples from Prokudin-Gorskii Collection</h2>
+            <p>Below are results from three additional images selected from the Prokudin-Gorskii collection, demonstrating the algorithm's performance on diverse historical photographs.</p>
+            
+            <div class="image-grid">
+                <div class="image-item">
+                    <img src="output_greenhouse.jpg" alt="Greenhouse">
+                    <div class="image-caption">Greenhouse</div>
+                    <div class="offset-info">G: (60, 27) | R: (127, 34) | 26.30s</div>
+                    <div style="font-size: 0.8rem; color: #666; margin-top: 5px;">
+                        <a href="https://www.loc.gov/item/2018679057/" target="_blank" style="color: #3498db;">Original: Library of Congress</a>
+                    </div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="output_memorial.jpg" alt="Memorial">
+                    <div class="image-caption">Memorial</div>
+                    <div class="offset-info">G: (15, 27) | R: (85, 51) | 26.64s</div>
+                    <div style="font-size: 0.8rem; color: #666; margin-top: 5px;">
+                        <a href="https://www.loc.gov/item/2018679151/" target="_blank" style="color: #3498db;">Original: Library of Congress</a>
+                    </div>
+                </div>
+                
+                <div class="image-item">
+                    <img src="output_bashkir.jpg" alt="Bashkir">
+                    <div class="image-caption">Bashkir</div>
+                    <div class="offset-info">G: (61, -5) | R: (131, -21) | 26.10s</div>
+                    <div style="font-size: 0.8rem; color: #666; margin-top: 5px;">
+                        <a href="https://www.loc.gov/item/2018679647/" target="_blank" style="color: #3498db;">Original: Library of Congress</a>
+                    </div>
+                </div>
+            </div>
+            
+            <p>These additional examples showcase the algorithm's robustness across different types of historical imagery, from architectural structures to portraits, all processed with consistent quality and reasonable processing times (around 26 seconds each for these large images).</p>
+        </section>
+
+        <section>
+            <h2>Algorithm Performance</h2>
+            <p>The algorithm successfully aligned all provided example images with reasonable processing times. The pyramid implementation effectively handles both small and large images, with processing times ranging from under a second for small images to about a minute for the largest high-resolution scans. The additional Prokudin-Gorskii collection images demonstrate particularly efficient processing times around 26 seconds.</p>
+            
+            <h3>Processing Time Analysis</h3>
+            <p><strong>Small Images (1024x390-396):</strong> 0.46-0.65 seconds</p>
+            <ul>
+                <li>Cathedral: 0.63s</li>
+                <li>Monastery: 0.46s</li>
+                <li>Tobolsk: 0.65s</li>
+            </ul>
+            
+            <p><strong>Large Images (9600x3600-3800):</strong> 26-53 seconds</p>
+            <ul>
+                <li>Bashkir: 26.10s</li>
+                <li>Greenhouse: 26.30s</li>
+                <li>Memorial: 26.64s</li>
+                <li>Self Portrait: 38.68s</li>
+                <li>Italil: 41.47s</li>
+                <li>Siren: 41.42s</li>
+                <li>Emir: 43.31s</li>
+                <li>Melons: 43.32s</li>
+                <li>Church: 43.46s</li>
+                <li>Three Generations: 45.25s</li>
+                <li>Icon: 50.65s</li>
+                <li>Harvesters: 53.38s</li>
+            </ul>
+            
+            <div class="highlight">
+                <strong>Note:</strong> All images were processed successfully without any alignment failures. The algorithm demonstrates robust performance across different image types and sizes from the Prokudin-Gorskii collection. The pyramid approach provides excellent scalability, with large images taking only about 50x longer than small images despite being 100x larger in pixel count.
+            </div>
+        </section>
+
+        <footer>
+            <p>CS 180 Project 1 - Prokudin-Gorskii Glass Plate Colorization</p>
+            <p>Implementation using Python, scikit-image, and numpy</p>
+        </footer>
+    </div>
+</body>
+</html>

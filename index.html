@@ -3,113 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CS 180 Photography Project</title>
-    <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>CS 180 Projects - Daniel Jung</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #fafafa;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 80px 0 60px 0;
+            color: #1f2937;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: #6b7280;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 40px;
+            padding: 60px 0 80px 0;
+            background: #fafafa;
+        }
+
+        .project-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid #e5e7eb;
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+
+
+        .project-content {
+            padding: 40px;
+        }
+
+        .project-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .project-subtitle {
+            font-size: 1.1rem;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+            font-weight: 400;
+        }
+
+        .project-description {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #555;
+            margin-bottom: 25px;
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+
+        .tech-tag {
+            background: #f8f9fa;
+            color: #495057;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid #e9ecef;
+        }
+
+        .project-link {
+            display: inline-flex;
+            align-items: center;
+            color: #374151;
+            font-weight: 500;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: color 0.2s ease;
+        }
+
+        .project-link:hover {
+            color: #1f2937;
+        }
+
+        .project-link::after {
+            content: '→';
+            margin-left: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .project-link:hover::after {
+            transform: translateX(4px);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            color: #6b7280;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .projects-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 30px 0 60px 0;
+            }
+            
+            .project-content {
+                padding: 30px;
+            }
+            
+            .project-title {
+                font-size: 1.6rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 60px 0 40px 0;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .header p {
+                font-size: 1.1rem;
+            }
+            
+            .project-image {
+                height: 200px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <h1>CS 180 Project 0: Becoming Friends with Your Camera</h1>
-            <br>
-            <p>  Submission by Daniel Jung.  Thank you to Lindsey Wu for being the model for this project!</p>
-        </div>
-    </header>
-    
-    <!-- Selfie Comparison -->
-    <section class="section">
-        <div class="container">
-            
-            <h2>Selfie Comparison</h2>
-            <div class="comparison-grid">
-                <div class="photo-container">
-                    <h3>Close-up (Distorted)</h3>
-                    <div class="photo-display">
-                        <img src="images/proj_0_pt1 (distorted).jpg" alt="Close-up selfie showing distortion">
-                    </div>
-                </div>
-                <div class="photo-container">
-                    <h3>Stepped Back + Zoomed</h3>
-                    <div class="photo-display">
-                        <img src="images/proj_0_pt1 (normal).jpg" alt="Improved portrait with natural proportions">
-                    </div>
-                </div>
-            </div>
-            <div class="section-explanation">
-                <p>When taking a close-up selfie, the camera is very close to the subject, which creates perspective distortion that makes facial features appear wider and more distorted. There are more relative differences in the angles between the features and the camera by taking a close-up selfie, while there are less relative differences by stepping back and zooming in. By stepping back and zooming in, we maintain the same subject size while reducing distortion, resulting in a more natural-looking portrait that better represents how the person actually appears.</p>
-            </div>
-        </div>
-    </section>
+    <div class="container">
+        <header class="header">
+            <h1>CS 180 Projects</h1>
+            <p>Computer Vision and Computational Photography Projects by Daniel Jung</p>
+        </header>
 
-    <!-- Architectural Perspective -->
-    <section class="section section-alt">
-        <div class="container">
-            <h2>Architectural Perspective</h2>
-            <div class="comparison-grid">
-                <div class="photo-container">
-                    <h3>Zoomed In (Compressed)</h3>
-                    <div class="photo-display">
-                        <img src="images/proj0_pt2 (zoomed in).jpg" alt="Architectural shot with zoom showing compressed perspective">
+        <div class="projects-grid">
+            <a href="project0/" class="project-card">
+                <div class="project-content">
+                    <h2 class="project-title">Project 0: Becoming Friends with Your Camera</h2>
+                    <p class="project-subtitle">Photography Fundamentals & Perspective</p>
+                    <p class="project-description">
+                        An exploration of camera fundamentals including perspective distortion, architectural photography, 
+                        and the dolly zoom effect. This project demonstrates understanding of how camera distance and 
+                        zoom affect image composition and visual perception.
+                    </p>
+                    <div class="project-tech">
+                        <span class="tech-tag">Photography</span>
+                        <span class="tech-tag">Perspective</span>
+                        <span class="tech-tag">Composition</span>
+                        <span class="tech-tag">Visual Effects</span>
                     </div>
+                    <div class="project-link">Explore Project 0</div>
                 </div>
-                <div class="photo-container">
-                    <h3>Natural Perspective</h3>
-                    <div class="photo-display">
-                        <img src="images/proj0_pt2 (not zoomed in).jpg" alt="Architectural shot with natural perspective">
+            </a>
+
+            <a href="project1/" class="project-card">
+                <div class="project-content">
+                    <h2 class="project-title">Project 1: Prokudin-Gorskii Colorization</h2>
+                    <p class="project-subtitle">Automatic Color Channel Alignment</p>
+                    <p class="project-description">
+                        Implementation of an automatic colorization algorithm for digitized Prokudin-Gorskii glass plate images. 
+                        Uses pyramid-based alignment and edge detection to align red and green channels with blue reference, 
+                        creating color images from historical black-and-white glass plates.
+                    </p>
+                    <div class="project-tech">
+                        <span class="tech-tag">Python</span>
+                        <span class="tech-tag">Computer Vision</span>
+                        <span class="tech-tag">Image Processing</span>
+                        <span class="tech-tag">Algorithm Design</span>
                     </div>
+                    <div class="project-link">Explore Project 1</div>
                 </div>
-            </div>
-            <div class="section-explanation">
-                <p>The zoomed-in shot compresses the perspective, making buildings appear closer together and creating a flattened effect. The natural perspective shot shows the true depth and spatial relationships between architectural elements, demonstrating how zoom affects urban scene perception.</p>
-            </div>
+            </a>
         </div>
-    </section>
 
-    <!-- Dolly Zoom -->
-    <section class="section">
-        <div class="container">
-            <h2>Dolly Zoom Effect</h2>
-            <div class="dolly-container">
-                <div class="photo-display large">
-                    <img src="images/proj_0_pt_3 lindsey-dolly-zoom.gif" alt="Dolly zoom animation effect">
-                </div>
-            </div>
-            <div class="section-explanation">
-                <p>This shot was taken in the North Reading Room at Doe Library, UC Berkeley. The dolly zoom effect creates a disorienting visual where the subject appears to stay the same size while the background perspective dramatically changes, achieved by simultaneously moving the camera backward while zooming in.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Gallery -->
-    <section class="section section-alt">
-        <div class="container">
-            <h2>Photo Gallery</h2>
-            <div class="gallery-grid">
-                <div class="photo-display">
-                    <img src="images/proj_0_pt1 (distorted).jpg" alt="Close-up selfie">
-                </div>
-                <div class="photo-display">
-                    <img src="images/proj_0_pt1 (normal).jpg" alt="Natural portrait">
-                </div>
-                <div class="photo-display">
-                    <img src="images/proj0_pt2 (zoomed in).jpg" alt="Zoomed architectural">
-                </div>
-                <div class="photo-display">
-                    <img src="images/proj0_pt2 (not zoomed in).jpg" alt="Natural architectural">
-                </div>
-                <div class="photo-display">
-                    <img src="images/proj_0_pt_3 lindsey-dolly-zoom.gif" alt="Dolly zoom effect">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p>&copy; Daniel Jung 2025 CS 180 Photography Project</p>
-        </div>
-    </footer>
+        <footer class="footer">
+            <p>&copy; 2025 Daniel Jung - CS 180 Computer Vision Projects</p>
+        </footer>
+    </div>
 </body>
 </html>
