@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS 180 Project 3: Image Warping and Mosaicing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #ffffff;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #ffffff;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+            padding: 40px 0;
+            background: #ffffff;
+            color: #333;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 400;
+            color: #2c3e50;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            color: #7f8c8d;
+        }
+        
+        .section {
+            margin-bottom: 60px;
+            padding: 0;
+            background: white;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        
+        .section h2 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            font-weight: 500;
+        }
+        
+        .section h3 {
+            color: #34495e;
+            margin: 30px 0 20px 0;
+            font-size: 1.3em;
+            font-weight: 500;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        /* Stack images vertically when needed */
+        .image-grid.stacked {
+            grid-template-columns: 1fr;
+        }
+        
+        .image-container {
+            text-align: center;
+            background: #ffffff;
+            padding: 20px;
+            border: 1px solid #e8e8e8;
+            transition: transform 0.3s ease;
+        }
+        
+        .image-container:hover {
+            transform: translateY(-5px);
+        }
+        
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+        }
+        
+        /* Special styling for the final summary image */
+        .image-container.summary-highlight {
+            grid-column: 1 / -1;
+            max-width: 100%;
+            margin: 20px auto;
+        }
+        
+        .image-container.summary-highlight img {
+            max-width: 100%;
+            width: 100%;
+            max-height: 600px;
+            object-fit: contain;
+            border: 2px solid #2c3e50;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .image-container h4 {
+            margin: 15px 0 10px 0;
+            color: #333;
+            font-size: 1.1em;
+        }
+        
+        .image-container p {
+            color: #666;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        /* Minimal, clean box for values/equations (not a code block) */
+        .matrix-box {
+            border: 1px solid #e8e8e8;
+            padding: 16px;
+            background: #ffffff;
+            margin: 10px 0 0 0;
+        }
+        .matrix-box pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            color: #2c3e50;
+            background: transparent;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .results-section {
+            background: #ffffff;
+            color: #333;
+            padding: 0;
+            margin: 60px 0;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        
+        .results-section h2 {
+            color: #2c3e50;
+            border-bottom: none;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .run-button {
+            background: #2c3e50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 20px 0;
+        }
+        
+        .run-button:hover {
+            background: #34495e;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 80px;
+            padding: 40px 0;
+            background: #ffffff;
+            color: #7f8c8d;
+            border-top: 1px solid #e8e8e8;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .image-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CS 180 Project 3</h1>
+            <p>Image Warping and Mosaicing</p>
+            <p>Advanced Computer Vision Techniques</p>
+        </div>
+
+        <div class="section">
+            <h2>Project Overview</h2>
+            <p>This project implements comprehensive image warping and mosaicing techniques using homography transformations. The implementation includes all required deliverables:</p>
+            <ul class="feature-list">
+                <li><strong>A.1:</strong> Source images with projective transformations (fixed center of projection)</li>
+                <li><strong>A.2:</strong> Homography recovery from point correspondences using least squares</li>
+                <li><strong>A.3:</strong> Image warping with nearest neighbor and bilinear interpolation + rectification</li>
+                <li><strong>A.4:</strong> Advanced image blending and mosaicing with weighted averaging</li>
+                <li><strong>B.1:</strong> Harris corner detection with Adaptive Non-Maximal Suppression (ANMS)</li>
+                <li><strong>B.2:</strong> 8x8 feature descriptor extraction with bias/gain normalization</li>
+                <li><strong>B.3:</strong> Feature matching using Lowe's ratio test for robust correspondences</li>
+                <li><strong>B.4:</strong> 4-point RANSAC for robust homography estimation</li>
+                <li>Alpha channel support for seamless compositing</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>A.1: Source Images</h2>
+            <p>Three sets of images captured with projective transformations between them (fixed center of projection, rotated camera):</p>
+            
+            <div class="image-grid">
+                <div class="image-container">
+                    <h4>Target Image 1</h4>
+                    <img src="target_1.jpg" alt="Target 1" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Target Image 2</h4>
+                    <img src="target_2.jpg" alt="Target 2" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Construction Image 1</h4>
+                    <img src="construction_1.jpg" alt="Construction 1" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Construction Image 2</h4>
+                    <img src="construction_2.jpg" alt="Construction 2" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Sunset Road Image 1</h4>
+                    <img src="photo_examples/image_1.jpg" alt="Example Image 1" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Sunset Road Image 2</h4>
+                    <img src="photo_examples/image_2.jpg" alt="Example Image 2" onerror="this.style.display='none'">
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Technical Implementation</h2>
+            
+            <h3>A.2: Homography Recovery</h3>
+            <p>The computeH function recovers 3x3 homography matrices from point correspondences using least squares optimization. The system handles overdetermined cases with more than 4 correspondences for robust results.</p>
+            
+            <div class="image-grid">
+                <div class="image-container">
+                    <h4>Point Correspondences</h4>
+                    <p>Visualization of matched points between images</p>
+                    <img src="results/correspondences_visualization.jpg" alt="Point Correspondences" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Debug Correspondences</h4>
+                    <p>Detailed correspondence analysis</p>
+                    <img src="results/debug_correspondences.jpg" alt="Debug Correspondences" onerror="this.style.display='none'">
+                </div>
+            </div>
+            
+            <h4>System of Equations</h4>
+            <p>The homography recovery uses a linear system of equations where each point correspondence contributes 2 equations to solve for the 8 unknown parameters of the 3x3 homography matrix.</p>
+            
+            <h4>Recovered Homography Matrix</h4>
+            <div class="matrix-box">
+                <pre>[[ 3.85167408e+00 -3.57943369e-03 -1.13875733e+04]
+ [ 1.04858177e+00  3.11814396e+00 -4.44575823e+03]
+ [ 5.03931427e-04 -1.22863035e-06  1.00000000e+00]]</pre>
+            </div>
+
+            <h3>A.3: Image Warping and Rectification</h3>
+            <p>Two interpolation methods are implemented from scratch:</p>
+            <ul>
+                <li><strong>Nearest Neighbor:</strong> Fast but lower quality</li>
+                <li><strong>Bilinear Interpolation:</strong> Higher quality with smooth transitions</li>
+            </ul>
+            
+            <h4>Rectification Results - Paintings</h4>
+            <div class="image-grid">
+                <div class="image-container">
+                    <h4>Original Image</h4>
+                    <p>Original paintings image before rectification</p>
+                    <img src="results/paintings_original.jpg" alt="Original Paintings" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Paintings - Nearest Neighbor</h4>
+                    <p>Rectified using nearest neighbor interpolation</p>
+                    <img src="results/paintings_rectified_nn.jpg" alt="Paintings NN" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Paintings - Bilinear</h4>
+                    <p>Rectified using bilinear interpolation</p>
+                    <img src="results/paintings_rectified_bil.jpg" alt="Paintings Bilinear" onerror="this.style.display='none'">
+                </div>
+            </div>
+            
+            <h4>Rectification Results - Drawings</h4>
+            <div class="image-grid">
+                <div class="image-container">
+                    <h4>Original Image</h4>
+                    <p>Original drawings image before rectification</p>
+                    <img src="results/drawings_original.jpg" alt="Original Drawings" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Drawings - Nearest Neighbor</h4>
+                    <p>Rectified using nearest neighbor interpolation</p>
+                    <img src="results/drawings_rectified_nn.jpg" alt="Drawings NN" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Drawings - Bilinear</h4>
+                    <p>Rectified using bilinear interpolation</p>
+                    <img src="results/drawings_rectified_bil.jpg" alt="Drawings Bilinear" onerror="this.style.display='none'">
+                </div>
+
+                <p>As we can see, the rectification works very well on images that are close to parallel with the image viewing surface - however, .</p>
+            </div>
+
+            <h3>A.4: Image Mosaicing</h3>
+            <p>Advanced blending using alpha masks with distance-based falloff for seamless compositing.</p>
+            
+            <h4>Mosaicing Results</h4>
+            <p>Procedure: We keep one image as reference, estimate the homography for the other image using manually selected correspondences, inverse-warp the second image into the reference frame, and blend using distance-based alpha feathering to reduce seams. Finally, we crop to the valid region.</p>
+            <div class="image-grid stacked">
+                <div class="image-container">
+                    <h4>Mosaic Result</h4>
+                    <p>Final blended mosaic with weighted averaging</p>
+                    <img src="final_result.jpg" alt="Mosaic Result" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Mosaic Result (Alt)</h4>
+                    <p>Alternate final mosaic rendering</p>
+                    <img src="final_result(2).jpg" alt="Mosaic Result 2" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Mosaic Result (Alt 2)</h4>
+                    <p>Alternate final mosaic rendering</p>
+                    <img src="final_result(3).jpg" alt="Mosaic Result 3" onerror="this.style.display='none'">
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>B.1: Harris Corner Detection</h2>
+            <p>Implementation of Harris Interest Point Detector with Adaptive Non-Maximal Suppression (ANMS) for robust corner detection and feature selection.</p>
+            
+            <h3>Harris Corner Detection</h3>
+            <p>The Harris corner detector identifies interest points by analyzing the local image structure. Our implementation uses the provided harris.py code with scikit-image's corner detection algorithm.</p>
+            
+ 
+            <ul>
+                <li><strong>Single Scale Detection:</strong> Uses sigma=1 for consistent corner detection</li>
+                <li><strong>Edge Discarding:</strong> Removes corners within 20 pixels of image boundaries</li>
+                <li><strong>Peak Detection:</strong> Uses local maxima with minimum distance constraints</li>
+            </ul>
+            
+            <h3>Adaptive Non-Maximal Suppression (ANMS)</h3>
+            <p>ANMS selects the most distinctive corners while ensuring good spatial distribution. Our implementation:</p>
+            <ul>
+                <li><strong>Response Sorting:</strong> Orders corners by Harris response strength</li>
+                <li><strong>Distance Filtering:</strong> Maintains minimum 30-pixel separation between corners</li>
+                <li><strong>Quality Selection:</strong> Chooses top 100 corners with optimal spacing</li>
+            </ul>
+            
+            <h4>Harris Corner Detection Results</h4>
+            <div class="image-grid">
+                <div class="image-container">
+                    <h4>Original Harris Corners</h4>
+                    <p>All detected corners overlaid on the image</p>
+                    <img src="results/harris_corners_all.jpg" alt="Harris Corners All" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>ANMS Filtered Corners</h4>
+                    <p>Selected corners after Adaptive Non-Maximal Suppression</p>
+                    <img src="results/harris_corners_anms.jpg" alt="Harris Corners ANMS" onerror="this.style.display='none'">
+                </div>
+          
+            </div>
+            
+            <h4>Results Analysis</h4>
+            <p>The Harris corner detector successfully identifies key interest points in the images. The ANMS algorithm effectively reduces corner density while preserving the most distinctive features, resulting in a well-distributed set of corners suitable for feature matching and homography estimation.</p>
+        </div>
+
+        <div class="section">
+            <h2>B.2: Feature Descriptor Extraction</h2>
+            <p>Implementation of 8x8 feature descriptor extraction with bias/gain normalization for robust feature representation and matching.</p>
+            
+            <h3>Feature Descriptor Implementation</h3>
+            <p>Our feature descriptor extraction follows the paper's specifications for creating distinctive, normalized descriptors from detected corners:</p>
+            
+            <h4>Key Features:</h4>
+            <ul>
+                <li><strong>40x40 Sampling Window:</strong> Large window around each corner for comprehensive feature capture</li>
+                <li><strong>Gaussian Blurring:</strong> 5x5 Gaussian filter to reduce noise and aliasing</li>
+                <li><strong>8x8 Downsampling:</strong> Linear interpolation to create 8x8 patches</li>
+                <li><strong>Bias/Gain Normalization:</strong> Zero-mean, unit-variance normalization for robustness</li>
+            </ul>
+            
+            <h3>Normalization Process</h3>
+            <p>The descriptors undergo robust normalization to ensure consistent feature representation:</p>
+            <ul>
+                <li><strong>Mean Subtraction:</strong> Removes bias (illumination differences)</li>
+                <li><strong>Standard Deviation Normalization:</strong> Ensures unit variance (contrast invariance)</li>
+                <li><strong>Robust Filtering:</strong> Skips nearly-constant patches (std < 1e-5)</li>
+            </ul>
+            
+            <h4>Feature Descriptor Results</h4>
+            <div class="image-grid">
+                <div class="image-container">
+                    <h4>Feature Descriptor Extraction Process</h4>
+                    <p>Complete pipeline: 40x40 sampling windows → 8x8 normalized descriptors</p>
+                    <img src="results/feature_descriptors_demo.jpg" alt="Feature Descriptors Demo" onerror="this.style.display='none'">
+                </div>
+            </div>
+            
+            <p><strong>Visualization Breakdown:</strong> The top row shows the 40x40 sampling windows around detected corners, the middle row displays the resulting 8x8 normalized descriptors, and the bottom row shows the corner locations in the original image. This demonstrates the complete feature extraction pipeline from large sampling windows to compact, normalized descriptors suitable for matching.</p>
+            
+    
+            
+            <h4>Results Analysis</h4>
+            <p>The feature descriptor extraction successfully creates normalized 8x8 patches from the 40x40 sampling windows. The bias/gain normalization ensures that descriptors are robust to illumination changes and contrast variations, making them suitable for reliable feature matching across different images.</p>
+        </div>
+
+        <div class="section">
+            <h2>B.3: Feature Matching</h2>
+            <p>Implementation of feature matching using Lowe's ratio test to find corresponding features between image pairs for robust homography estimation.</p>
+            
+            <h3>Feature Matching Implementation</h3>
+            <p>Our feature matching algorithm uses the improved Lowe's ratio test to find reliable correspondences between feature descriptors from different images:</p>
+            
+            <h4>Key Features:</h4>
+            <ul>
+                <li><strong>Lowe's Ratio Test:</strong> Compares first and second nearest neighbor distances</li>
+                <li><strong>Adaptive Thresholding:</strong> Uses ratio threshold of 0.6-0.8 for optimal balance</li>
+                <li><strong>Distance Filtering:</strong> Additional constraints on minimum and maximum distances</li>
+                <li><strong>Duplicate Removal:</strong> Ensures bidirectional consistency in matches</li>
+            </ul>
+            
+            <h3>Matching Algorithm</h3>
+            <p>The matching process follows these steps:</p>
+            <ul>
+                <li><strong>Descriptor Comparison:</strong> Compute Euclidean distances between all descriptor pairs</li>
+                <li><strong>Nearest Neighbor Search:</strong> Find first and second nearest neighbors for each descriptor</li>
+                <li><strong>Ratio Test:</strong> Apply Lowe's test: distance1 < ratio_threshold × distance2</li>
+                <li><strong>Quality Filtering:</strong> Remove matches that are too close or too far</li>
+            </ul>
+            
+            <h4>Feature Matching Results</h4>
+            <div class="image-grid">
+                <div class="image-container">
+                    <h4>Feature Matches</h4>
+                    <p>Matched features between image pairs using Lowe's ratio test</p>
+                    <img src="results/feature_matches_demo.jpg" alt="Feature Matches Demo" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Optimized Feature Matches</h4>
+                    <p>Improved matching with better ratio threshold tuning</p>
+                    <img src="results/optimized_feature_matches.jpg" alt="Optimized Feature Matches" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>RANSAC Inliers</h4>
+                    <p>Robust matches after RANSAC filtering for homography estimation</p>
+                    <img src="results/optimized_ransac_inliers.jpg" alt="RANSAC Inliers" onerror="this.style.display='none'">
+                </div>
+            </div>
+            
+            <h4>Results Analysis</h4>
+            <p>The feature matching algorithm successfully identifies corresponding features between image pairs using Lowe's ratio test. The ratio threshold of 0.6-0.8 provides an optimal balance between match quality and quantity, ensuring robust correspondences for homography estimation. The visualization shows matched features with connecting lines, demonstrating the algorithm's ability to find reliable correspondences across different viewpoints.</p>
+        </div>
+
+        <div class="section">
+            <h2>B.4: RANSAC for Robust Homography</h2>
+            <p>Implementation of 4-point RANSAC for robust homography estimation using OpenCV's proven RANSAC algorithm combined with Part A mosaicing code for seamless automatic image stitching.</p>
+            
+            <h3>RANSAC Implementation</h3>
+            <p>Our B.4 implementation uses OpenCV's robust RANSAC algorithm to estimate homography matrices, filtering out outliers and ensuring reliable transformations:</p>
+            
+            <h4>Key Features:</h4>
+            <ul>
+                <li><strong>OpenCV RANSAC:</strong> Uses proven cv2.findHomography with RANSAC method</li>
+                <li><strong>Robust Estimation:</strong> Filters outliers using distance threshold of 8.0 pixels</li>
+                <li><strong>Inverse Homography:</strong> Correctly computes inverse homography for proper image warping</li>
+                <li><strong>Part A Integration:</strong> Uses proven Part A mosaicing code for blending</li>
+                <li><strong>Fully Automatic:</strong> No manual point selection required</li>
+            </ul>
+            
+            <h3>Automatic Mosaicing Pipeline</h3>
+            <p>The implementation combines B.1-B.3 feature detection with robust RANSAC homography estimation:</p>
+            <ul>
+                <li><strong>B.1:</strong> Harris corner detection with ANMS for feature selection</li>
+                <li><strong>B.2:</strong> 8x8 feature descriptor extraction with bias/gain normalization</li>
+                <li><strong>B.3:</strong> Feature matching using Lowe's ratio test</li>
+                <li><strong>B.4:</strong> OpenCV RANSAC for robust homography estimation</li>
+                <li><strong>Part A:</strong> Proven mosaicing code for image warping and blending</li>
+            </ul>
+            
+            <h4>B.4 RANSAC Results</h4>
+            <div class="image-grid">
+                <div class="image-container">
+                    <h4>Sunset Road Mosaic</h4>
+                    <p>Automatic mosaicing with 10 inliers, proper overlap</p>
+                    <img src="results/b4_auto_only_comparison_1.jpg" alt="B4 Sunset Road" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Construction Site Mosaic</h4>
+                    <p>Automatic mosaicing with 12 inliers, robust alignment</p>
+                    <img src="results/b4_auto_only_comparison_2.jpg" alt="B4 Construction Site" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container">
+                    <h4>Target Images Mosaic</h4>
+                    <p>Automatic mosaicing with 30 inliers, excellent quality</p>
+                    <img src="results/b4_auto_only_comparison_3.jpg" alt="B4 Target Images" onerror="this.style.display='none'">
+                </div>
+                
+                <div class="image-container summary-highlight">
+                    <h4>All Mosaics Summary</h4>
+                    <p>Complete overview of all automatic mosaics</p>
+                    <img src="results/b4_auto_only_all_mosaics_summary.jpg" alt="B4 Summary" onerror="this.style.display='none'">
+                </div>
+            </div>
+            
+            
+            <h4>Results Analysis</h4>
+            <p>The B.4 RANSAC implementation successfully creates robust homography estimates for all three image pairs using OpenCV's proven algorithm. The automatic mosaicing approach demonstrates excellent quality with proper image positioning (image_1 left, image_2 right) and sufficient overlap for smooth blending. The corrected implementation now properly handles homography direction using inverse transformation, ensuring seamless image stitching without manual intervention.</p>
+        </div>
+
+        <div class="section">
+            <h2> Technical Details</h2>
+            
+            <h3>Deliverable A.1: Source Images</h3>
+            <p>✓ Two sets of images with projective transformations (fixed center of projection, rotated camera)</p>
+            <p>✓ Images captured with 40-70% overlap for robust registration</p>
+            
+            <h3>Deliverable A.2: Homography Recovery</h3>
+            <p>✓ <strong>Homography Matrix:</strong> 3x3 transformation matrix with 8 degrees of freedom</p>
+            <p>✓ <strong>Least Squares:</strong> Overdetermined system solved using <code>np.linalg.lstsq()</code> for robust recovery</p>
+            <p>✓ <strong>Point Correspondences:</strong> Manual selection with visualization tools</p>
+            
+            <h3>Deliverable A.3: Image Warping</h3>
+            <p>✓ <strong>Nearest Neighbor:</strong> Custom implementation from scratch</p>
+            <p>✓ <strong>Bilinear Interpolation:</strong> Custom implementation with weighted averaging</p>
+            <p>✓ <strong>Rectification:</strong> Two examples (paintings and drawings) with both interpolation methods</p>
+            <p>✓ <strong>Inverse Warping:</strong> Eliminates holes in output images</p>
+            
+            <h3>Deliverable A.4: Image Mosaicing</h3>
+            <p>✓ <strong>Weighted Averaging:</strong> Distance-based alpha masks prevent edge artifacts</p>
+            <p>✓ <strong>Three Mosaics:</strong> Multiple examples with source images and results</p>
+            <p>✓ <strong>Alpha Blending:</strong> Linear falloff creates natural transitions</p>
+            
+            <h3>Deliverable B.1: Harris Corner Detection</h3>
+            <p>✓ <strong>Harris Detector:</strong> Single-scale corner detection using scikit-image</p>
+            <p>✓ <strong>Edge Discarding:</strong> Removes corners within 20 pixels of boundaries</p>
+            <p>✓ <strong>ANMS Implementation:</strong> Adaptive Non-Maximal Suppression for corner selection</p>
+            <p>✓ <strong>Visualization:</strong> Side-by-side comparison of original and filtered corners</p>
+            
+            <h3>Deliverable B.2: Feature Descriptor Extraction</h3>
+            <p>✓ <strong>8x8 Descriptors:</strong> Normalized patches extracted from 40x40 windows</p>
+            <p>✓ <strong>Gaussian Blurring:</strong> 5x5 filter to reduce noise and aliasing</p>
+            <p>✓ <strong>Bias/Gain Normalization:</strong> Zero-mean, unit-variance normalization</p>
+            <p>✓ <strong>Robust Filtering:</strong> Skips nearly-constant patches for reliability</p>
+            
+            <h3>Deliverable B.3: Feature Matching</h3>
+            <p>✓ <strong>Lowe's Ratio Test:</strong> Compares first and second nearest neighbor distances</p>
+            <p>✓ <strong>Adaptive Thresholding:</strong> Ratio threshold of 0.6-0.8 for optimal balance</p>
+            <p>✓ <strong>Quality Filtering:</strong> Distance constraints and duplicate removal</p>
+            <p>✓ <strong>Visualization:</strong> Matched features with connecting lines between images</p>
+            
+            <h3>Deliverable B.4: RANSAC for Robust Homography</h3>
+            <p>✓ <strong>4-Point RANSAC:</strong> Robust homography estimation from 4 point correspondences</p>
+            <p>✓ <strong>Outlier Filtering:</strong> Distance threshold of 8.0 pixels for inlier detection</p>
+            <p>✓ <strong>Manual vs Automatic:</strong> Comparison across 3 image pairs</p>
+            <p>✓ <strong>Multiple Mosaics:</strong> 3+ automatic mosaics with quality validation</p>
+        </div>
+
+        <div class="footer">
+            <p><strong>CS 180 Project 3: Image Warping and Mosaicing</strong></p>
+            <p>Advanced Computer Vision • Homography Transformations • Image Processing</p>
+            <p>Implementation includes all required components: A.1 through A.4 and B.1 through B.4</p>
+        </div>
+    </div>
+
+    <script>
+        function runDemo() {
+            alert('To run the demo:\n\n1. Open terminal in project directory\n2. Run: python main.py\n3. View generated images and results\n\nMake sure you have numpy, opencv-python, and matplotlib installed!');
+        }
+        
+        // Add some interactive effects
+        document.addEventListener('DOMContentLoaded', function() {
+            const containers = document.querySelectorAll('.image-container');
+            containers.forEach(container => {
+                container.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.02)';
+                });
+                container.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
